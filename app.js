@@ -2,31 +2,32 @@
 
 const express = require('express');
 
+const handlebars = require('express-handlebars').create({ defaultLayout: 'main'});
+
 const app = express();
+
+app.engine('handlebars', handlebars.engine);
+app.set('view engine', 'handlebars');
 
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (request, response) => {
-    response.type('text/plain');
-    response.send('Meadowlark Travel');
+    response.render('home');
 });
 
 app.get('/about', (request, response) => {
-    response.type('text/plain');
-    response.send('About Meadowlark Travel');
+    response.render('about');
 });
 
 app.use((request, response) => {
     response.status(404);
-    response.type('text/pain');
-    response.send('404 - Not found');
+    response.render('404');
 });
 
 app.use((error, request, response, next) => {
     if(error)console.error(error); 
     response.status(500);
-    response.type('text/pain');
-    response.send('500 - Server error');
+    response.render('500');
 });
 
 app.listen(app.get('port'), () => {
