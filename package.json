@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/IvanShastin/expressapp/issues"
   },
-  "homepage": "https://github.com/IvanShastin/expressapp#readme"
+  "homepage": "https://github.com/IvanShastin/expressapp#readme",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
 }
