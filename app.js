@@ -1,7 +1,7 @@
 "use strict";
 
 const express = require("express");
-var fortune = require('./lib/fortune');
+var fortune = require("./lib/fortune");
 
 const handlebars = require("express-handlebars").create({
   defaultLayout: "main"
@@ -16,14 +16,18 @@ app.set("port", process.env.PORT || 3000);
 
 app.use(express.static(__dirname + "/public"));
 
+app.use(function(req, res, next) {
+  res.locals.showTests =
+    app.get("env") !== "production" && req.query.test === "1";
+  next();
+});
+
 app.get("/", (request, response) => {
   response.render("home");
 });
 
-
-
 app.get("/about", (request, response) => {
-  response.render("about", { fortune: fortune.getFortune() });
+  response.render("about", { fortune: fortune.getFortune(), pageTestScript: '/qa/tests-about.js'});
 });
 
 app.use((request, response) => {
