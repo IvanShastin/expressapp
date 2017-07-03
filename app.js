@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require("express");
+var fortune = require('./lib/fortune');
 
 const handlebars = require("express-handlebars").create({
   defaultLayout: "main"
@@ -19,18 +20,10 @@ app.get("/", (request, response) => {
   response.render("home");
 });
 
-var fortunes = [
-  "Conquer your fears or they will conquer you.",
-  "Rivers need springs.",
-  "Do not fear what you don't know.",
-  "You will have a pleasant surprise.",
-  "Whenever possible, keep it simple."
-];
+
 
 app.get("/about", (request, response) => {
-  var randomFortune = 
-    fortunes[Math.floor(Math.random() * fortunes.length)];
-  response.render("about", { fortune: randomFortune });
+  response.render("about", { fortune: fortune.getFortune() });
 });
 
 app.use((request, response) => {
