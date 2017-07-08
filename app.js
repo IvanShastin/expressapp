@@ -30,6 +30,14 @@ app.get("/about", (request, response) => {
   response.render("about", { fortune: fortune.getFortune(), pageTestScript: '/qa/tests-about.js'});
 });
 
+app.get("/tours/hood-river", (request, response) => {
+  response.render("tours/hood-river");
+});
+
+app.get("/tours/request-group-rate", (request, response) => {
+  response.render("tours/request-group-rate");
+});
+
 app.use((request, response) => {
   response.status(404);
   response.render("404");
