@@ -30,6 +30,15 @@ app.get("/about", (request, response) => {
   response.render("about", { fortune: fortune.getFortune(), pageTestScript: '/qa/tests-about.js'});
 });
 
+app.get("/headers", (request, response) => {
+  response.set("Content-type", "text/plain");
+  var s = '';
+  for(let name in request.headers) {
+    s = s + name + ': ' + request.headers[name] + '\n';
+  }
+  response.send(s);
+});
+
 app.get("/tours/hood-river", (request, response) => {
   response.render("tours/hood-river");
 });
