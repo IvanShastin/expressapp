@@ -4,7 +4,7 @@
   "description": "Express web application",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node app_cluster.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,11 +18,16 @@
   },
   "homepage": "https://github.com/IvanShastin/expressapp#readme",
   "dependencies": {
+    "body-parser": "^1.17.2",
     "express": "^4.15.3",
-    "express-handlebars": "^3.0.0"
+    "express-handlebars": "^3.0.0",
+    "express-logger": "0.0.3",
+    "express-session": "^1.15.5",
+    "morgan": "^1.8.2"
   },
   "devDependencies": {
     "chai": "^4.0.2",
+    "cookie-parser": "^1.4.3",
     "eslint": "^4.1.1",
     "eslint-config-google": "^0.9.1",
     "grunt": "^1.0.1",
