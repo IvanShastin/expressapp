@@ -1,7 +1,8 @@
 "use strict";
-
 const express = require("express");
-var fortune = require("./lib/fortune");
+const fortune = require("./lib/fortune");
+const credentials = require("./credentials");
+const getWeatherData = require("./models/weather");
 
 const handlebars = require("express-handlebars").create({
   defaultLayout: "main"
@@ -11,14 +12,46 @@ const app = express();
 
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
-
 app.set("port", process.env.PORT || 3000);
 
+switch (app.get('env')) {
+  case 'development':
+    app.use(require('morgan')('dev'));
+    break;
+ case 'production':
+    app.use(require('express-logger')({
+      path: __dirname + '/log/requests.log'
+    }));
+    break;
+}
+
 app.use(express.static(__dirname + "/public"));
+
+app.use(require("body-parser")());
+app.use(require('cookie-parser')(credentials.cookieSecret));
+app.use(require('express-session')());
+
+app.use((request, response, next) => {
+  let cluster = require('cluster');
+  if(cluster.isWorker) console.log(`Worker ${cluster.worker.id} received request`);
+  next();
+})
 
 app.use(function(req, res, next) {
   res.locals.showTests =
     app.get("env") !== "production" && req.query.test === "1";
+  next();
+});
+
+app.use((request, response, next) => {
+  response.locals.flash = request.session.flash;
+  delete request.session.flash;
+  next();
+})
+
+app.use(function(req, res, next) {
+  if (!res.locals.partials) res.locals.partials = {};
+  res.locals.partials.weather = getWeatherData();
   next();
 });
 
@@ -27,14 +60,26 @@ app.get("/", (request, response) => {
 });
 
 app.get("/about", (request, response) => {
-  response.render("about", { fortune: fortune.getFortune(), pageTestScript: '/qa/tests-about.js'});
+  response.render("about", {
+    fortune: fortune.getFortune(),
+    pageTestScript: "/qa/tests-about.js"
+  });
 });
+
+app.get("/form", (request, response) => {
+  response.render("form");
+});
+
+app.post("/process", (request, response) => {
+  console.log(request.body);
+  response.redirect(303, "about");
+})
 
 app.get("/headers", (request, response) => {
   response.set("Content-type", "text/plain");
-  var s = '';
-  for(let name in request.headers) {
-    s = s + name + ': ' + request.headers[name] + '\n';
+  var s = "";
+  for (let name in request.headers) {
+    s = s + name + ": " + request.headers[name] + "\n";
   }
   response.send(s);
 });
@@ -47,17 +92,46 @@ app.get("/tours/request-group-rate", (request, response) => {
   response.render("tours/request-group-rate");
 });
 
+app.get("/newsletter", function(req, res) {
+  res.render("newsletter", { csrf: "CSRF token goes here" });
+});
+
+app.post("/process", function(req, res) {
+  console.log("Form (from querystring): " + req.query.form);
+  console.log("CSRF token (from hidden form field): " + req.body._csrf);
+  console.log("Name (from visible form field): " + req.body.name);
+  console.log("Email (from visible form field): " + req.body.email);
+  res.redirect(303, "/thank-you");
+});
+
+app.get('/thank-you', (request, response) => {
+  response.render('thank-you', {word : "Gracias"});
+})
+
 app.use((request, response) => {
   response.status(404);
   response.render("404");
 });
 
+
+//catch all
 app.use((error, request, response, next) => {
   if (error) console.error(error);
   response.status(500);
   response.render("500");
 });
 
-app.listen(app.get("port"), () => {
-  console.log("Express started on http://localhost:" + app.get("port"));
-});
+const startServer = () => {
+  app.listen(app.get('port'), () => {
+    console.log(`Express started in ${app.get('env')} mode on http://localhost:${app.get('port')}`);
+  })
+}
+
+if(require.main === module) {
+  startServer();
+} else {
+  module.exports = startServer;
+}
+
+
+
